@@ -12,6 +12,7 @@
     "lib/symbols.js",
     "lib/token-types.js",
     "lib/math-ml.js",
-    "lib/escape.js"
+    "lib/escape.js",
+	  "lib/string.js"
   ]
 }

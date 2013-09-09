@@ -1,3 +1,4 @@
+require('./lib/string')
 var ml = require('./lib/math-ml');
 
 var tokenTypes = require('./lib/token-types');
@@ -20,10 +21,12 @@ var AMnames = AMsymbols.map(function (symbol) {
 
 module.exports = parseMath;
 function parseMath(str) {
-  var frag, node;
+  var frag, node, mstyle;
   AMnestingDepth = 0;
   frag = AMparseExpr(str.replace(/^\s+/g, ""), false)[0];
-  node = createMmlNode("math", frag);
+  mstyle = createMmlNode("mstyle", frag);
+  mstyle.setAttribute("displaystyle", true);
+  node = createMmlNode("math", mstyle);
   node.setAttribute("title", str.replace(/\s+/g, " "));
   return node;
 }
@@ -254,9 +257,15 @@ function AMparseSexpr(str) { //parses str and returns [node,tailstr]
           if (result[0].childNodes[i].nodeName == "mi" || result[0].nodeName == "mi") {
             st = (result[0].nodeName == "mi" ? result[0].firstChild.nodeValue : result[0].childNodes[i].firstChild.nodeValue);
             var newst = [];
-            for (var j = 0; j < st.length; j++)
-            if (st.charCodeAt(j) > 64 && st.charCodeAt(j) < 91) newst = newst + String.fromCharCode(symbol.codes[st.charCodeAt(j) - 65]);
-            else newst = newst + st.charAt(j);
+            for (var j = 0; j < st.length; j++){
+              if (st.charCodeAt(j) > 64 && st.charCodeAt(j) < 91){
+                newst = newst + String.fromCodePoint(symbol.codes[st.charCodeAt(j) - 65]);
+              }
+              else if (st.charCodeAt(j) > 96 && st.charCodeAt(j) < 123){
+                newst = newst + String.fromCodePoint(symbol.codes[st.charCodeAt(j) - 71]);
+              }
+              else newst = newst + st.charAt(j);
+            }
             if (result[0].nodeName == "mi") result[0] = createMmlNode("mo", newst);
             else result[0].replaceChild(createMmlNode("mo", newst), result[0].childNodes[i]);
           }
